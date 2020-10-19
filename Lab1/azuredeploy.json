@@ -1,0 +1,114 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "storageAccountName": {
+            "type": "string",
+            "defaultValue": "110196devopssa",
+            "metadata": {
+                "description": "The name of the storage account."
+            },
+            "minLength": 3,
+            "maxLength": 24
+        },
+        "webAppName": {
+            "type": "string",
+            "defaultValue": "110196devopswa",
+            "metadata": {
+                "description": "The name of the web app."
+            },
+            "minLength": 3,
+            "maxLength": 24
+        },
+        "webAppLanguage": {
+            "type": "string",
+            "defaultValue": "node",
+            "allowedValues": [
+                ".net",
+                "php",
+                "node",
+                "html"
+            ],
+            "metadata": {
+                "description": "The language stack of the app."
+            }
+        },
+        "webAppServicePlanName": {
+            "type": "string",
+            "defaultValue": "110196devopsasp",
+            "metadata": {
+                "description": "The name of the service plan."
+            },
+            "minLength": 3,
+            "maxLength": 24
+        },
+        "sku": {
+            "type": "string",
+            "defaultValue": "F1",
+            "metadata": {
+                "description": "The pricing tiers."
+            }
+        }
+    },
+    "functions": [],
+    "variables": {
+        "configReference": {
+            ".net": {
+                "comments": ".Net app. No additional configuration needed."
+            },
+            "html": {
+                "comments": "HTML app. No additional configuration needed."
+            },
+            "php": {
+                "phpVersion": "7.4"
+            },
+            "node": {
+                "appSettings": [{
+                    "name": "WEBSITE_NODE_DEFAULT_VERSION",
+                    "value": "12.15.0"
+                }]
+            }
+        }
+    },
+    "resources": [
+        {
+            "name": "[parameters('storageAccountName')]",
+            "type": "Microsoft.Storage/storageAccounts",
+            "apiVersion": "2019-06-01",
+            "tags": {
+                "displayName": "[parameters('storageAccountName')]"
+            },
+            "location": "[resourceGroup().location]",
+            "kind": "StorageV2",
+            "sku": {
+                "name": "Premium_LRS",
+                "tier": "Premium"
+            }
+        },
+        {
+            "type": "Microsoft.Web/serverfarms",
+            "apiVersion": "2018-02-01",
+            "name": "[parameters('webAppServicePlanName')]",
+            "location": "[resourceGroup().location]",
+            "sku": {
+                "name": "[parameters('sku')]"
+            },
+            "properties": {}
+        },
+        {
+            "name": "[parameters('webAppName')]",
+            "type": "Microsoft.Web/sites",
+            "apiVersion": "2018-11-01",
+            "location": "[resourceGroup().location]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/serverfarms', parameters('webAppServicePlanName'))]"
+            ],
+            "properties": {
+                "name": "[parameters('webAppName')]",
+                "siteConfig": "[variables('configReference')[parameters('webAppLanguage')]]",
+                "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', parameters('webAppServicePlanName'))]"
+            }
+        }
+    ],
+    "outputs": {}
+}
