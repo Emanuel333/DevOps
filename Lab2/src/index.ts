@@ -15,7 +15,7 @@ export class Server {
       }
     );
 
-    this.app.listen(3000, () => console.log('Server started on port 3000!'));
+    this.app.listen(1377, () => console.log('Server started on port 1377!'));
   };
 
   private logMiddleware(req: express.Request, res: express.Response, next: express.NextFunction) {
